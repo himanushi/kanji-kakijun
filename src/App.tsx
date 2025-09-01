@@ -210,6 +210,16 @@ function App() {
           />
           <span>{kanjiSizeMm}mm</span>
         </div>
+        
+        <div className="print-control">
+          <button 
+            onClick={() => window.print()} 
+            className="print-button"
+            disabled={kanjiList.length === 0}
+          >
+            印刷
+          </button>
+        </div>
       </div>
       
       {kanjiList.length > 0 && (
