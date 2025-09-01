@@ -122,6 +122,11 @@ function App() {
     const saved = localStorage.getItem('kanjiSizeMm');
     return saved ? parseInt(saved, 10) : 20;
   });
+  const [removeDuplicates, setRemoveDuplicates] = useState(() => {
+    // LocalStorageから読み込み
+    const saved = localStorage.getItem('removeDuplicates');
+    return saved ? JSON.parse(saved) : true; // デフォルトは重複削除ON
+  });
   
   // 入力テキストの変更を監視してLocalStorageに保存
   useEffect(() => {
@@ -133,12 +138,23 @@ function App() {
     localStorage.setItem('kanjiSizeMm', kanjiSizeMm.toString());
   }, [kanjiSizeMm]);
   
+  // 重複削除設定の変更を監視してLocalStorageに保存
+  useEffect(() => {
+    localStorage.setItem('removeDuplicates', JSON.stringify(removeDuplicates));
+  }, [removeDuplicates]);
+  
   // 入力テキストから漢字のみを抽出（行ごとに処理）
   const extractKanjiByLines = (text: string): string[][] => {
     const lines = text.split('\n');
     return lines.map(line => {
       const kanjiRegex = /[\u4e00-\u9faf\u3400-\u4dbf]/g;
-      const matches = line.match(kanjiRegex);
+      let matches = line.match(kanjiRegex);
+      
+      if (matches && removeDuplicates) {
+        // 重複削除：各行内で重複を削除
+        matches = [...new Set(matches)];
+      }
+      
       return matches ? matches : [];
     }).filter(line => line.length > 0); // 空行は除外
   };
@@ -235,6 +251,17 @@ function App() {
             className="size-slider"
           />
           <span>{kanjiSizeMm}mm</span>
+        </div>
+        
+        <div className="options-control">
+          <label>
+            <input
+              type="checkbox"
+              checked={removeDuplicates}
+              onChange={(e) => setRemoveDuplicates(e.target.checked)}
+            />
+            重複削除
+          </label>
         </div>
         
         <div className="print-control">
