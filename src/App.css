@@ -172,16 +172,17 @@
   font-size: 14px;
 }
 
-.stroke-order-select {
+.sort-order-select {
   padding: 4px 8px;
   font-size: 14px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: white;
   cursor: pointer;
+  min-width: 150px;
 }
 
-.stroke-order-select:focus {
+.sort-order-select:focus {
   outline: none;
   border-color: #4CAF50;
 }
