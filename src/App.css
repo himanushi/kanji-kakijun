@@ -322,7 +322,8 @@
   .kanji-container {
     margin: 0;
     padding: 0;
-    border: 1px solid #333;
+    border: 1px solid #333 !important;
+    border-width: 1px !important;
     overflow: visible;
     page-break-inside: avoid;
     break-inside: avoid;
