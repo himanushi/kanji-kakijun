@@ -312,6 +312,7 @@
   }
   
   .kanji-row {
+    display: flex;
     gap: 0;
     margin: 0;
     padding: 0;
