@@ -92,8 +92,8 @@ const KanjiDisplay: React.FC<KanjiDisplayProps> = ({ kanji, sizeMm, showNumbers 
     <div className="kanji-container" style={{ width: `${sizeMm}mm`, height: `${sizeMm}mm` }}>
       {/* 十字線（点線） */}
       <svg className="grid-lines" viewBox="0 0 100 100" style={{ width: '100%', height: '100%', position: 'absolute' }}>
-        <line x1="50" y1="0" x2="50" y2="100" stroke="#999" strokeDasharray="2,2" />
-        <line x1="0" y1="50" x2="100" y2="50" stroke="#999" strokeDasharray="2,2" />
+        <line x1="50" y1="0" x2="50" y2="100" stroke="#666" strokeDasharray="2,2" />
+        <line x1="0" y1="50" x2="100" y2="50" stroke="#666" strokeDasharray="2,2" />
       </svg>
       
       {/* 漢字SVG */}
@@ -127,6 +127,10 @@ function App() {
     const saved = localStorage.getItem('removeDuplicates');
     return saved ? JSON.parse(saved) : true; // デフォルトは重複削除ON
   });
+  const [strokeOrder, setStrokeOrder] = useState(() => {
+    // LocalStorageから読み込み
+    return localStorage.getItem('strokeOrder') || 'none'; // なし, asc(昇順), desc(降順)
+  });
   
   // 入力テキストの変更を監視してLocalStorageに保存
   useEffect(() => {
@@ -143,6 +147,30 @@ function App() {
     localStorage.setItem('removeDuplicates', JSON.stringify(removeDuplicates));
   }, [removeDuplicates]);
   
+  // 画数順設定の変更を監視してLocalStorageに保存
+  useEffect(() => {
+    localStorage.setItem('strokeOrder', strokeOrder);
+  }, [strokeOrder]);
+  
+  // KanjiVGのSVGデータから実際の画数を取得
+  const getStrokeCountFromKanjiVG = async (kanji: string): Promise<number> => {
+    try {
+      const svg = await fetchKanjiSVG(kanji);
+      if (svg) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svg, 'image/svg+xml');
+        const strokes = doc.querySelectorAll('path[id^="kvg:"]');
+        return strokes.length;
+      }
+    } catch (error) {
+      console.error('画数取得エラー:', error);
+    }
+    return 10; // デフォルト
+  };
+
+  // 漢字の画数キャッシュ
+  const [strokeCache, setStrokeCache] = useState<Map<string, number>>(new Map());
+
   // 入力テキストから漢字のみを抽出（行ごとに処理）
   const extractKanjiByLines = (text: string): string[][] => {
     const lines = text.split('\n');
@@ -158,8 +186,55 @@ function App() {
       return matches ? matches : [];
     }).filter(line => line.length > 0); // 空行は除外
   };
+
+  // 画数順ソート用の非同期関数
+  const sortKanjiByStrokeCount = async (kanjiList: string[][]): Promise<string[][]> => {
+    if (strokeOrder === 'none') return kanjiList;
+
+    const sortedLines = await Promise.all(
+      kanjiList.map(async (lineKanji) => {
+        // 各漢字の画数を取得
+        const kanjiWithStrokes = await Promise.all(
+          lineKanji.map(async (kanji) => {
+            // キャッシュから取得を試行
+            let strokeCount = strokeCache.get(kanji);
+            if (strokeCount === undefined) {
+              strokeCount = await getStrokeCountFromKanjiVG(kanji);
+              // キャッシュに保存
+              setStrokeCache(prev => new Map(prev.set(kanji, strokeCount!)));
+            }
+            return { kanji, strokeCount };
+          })
+        );
+
+        // 画数順でソート
+        kanjiWithStrokes.sort((a, b) => 
+          strokeOrder === 'asc' 
+            ? a.strokeCount - b.strokeCount 
+            : b.strokeCount - a.strokeCount
+        );
+
+        return kanjiWithStrokes.map(item => item.kanji);
+      })
+    );
+
+    return sortedLines;
+  };
   
-  const kanjiLines = extractKanjiByLines(inputText);
+  const [sortedKanjiLines, setSortedKanjiLines] = useState<string[][]>([]);
+
+  // 漢字リストを画数順でソート
+  useEffect(() => {
+    const processKanji = async () => {
+      const rawKanjiLines = extractKanjiByLines(inputText);
+      const sorted = await sortKanjiByStrokeCount(rawKanjiLines);
+      setSortedKanjiLines(sorted);
+    };
+    
+    processKanji();
+  }, [inputText, removeDuplicates, strokeOrder, strokeCache]);
+
+  const kanjiLines = sortedKanjiLines;
   
   // A4サイズ（210mm × 297mm）を考慮した1行あたりの最大マス数を計算
   const maxKanjiPerRow = Math.floor(190 / kanjiSizeMm); // マージンを考慮
@@ -195,13 +270,13 @@ function App() {
         ));
         
         rows.push(
-          <div key={`line-${lineIndex}-row-${i}-numbered`} className="kanji-row">
-            {numberedRow}
-          </div>
-        );
-        rows.push(
-          <div key={`line-${lineIndex}-row-${i}-plain`} className="kanji-row">
-            {plainRow}
+          <div key={`line-${lineIndex}-row-${i}-pair`} className="kanji-pair">
+            <div className="kanji-row">
+              {numberedRow}
+            </div>
+            <div className="kanji-row">
+              {plainRow}
+            </div>
           </div>
         );
         
@@ -262,6 +337,20 @@ function App() {
             />
             重複削除
           </label>
+        </div>
+        
+        <div className="sort-control">
+          <label htmlFor="stroke-order">画数順：</label>
+          <select
+            id="stroke-order"
+            value={strokeOrder}
+            onChange={(e) => setStrokeOrder(e.target.value)}
+            className="stroke-order-select"
+          >
+            <option value="none">なし</option>
+            <option value="asc">昇順</option>
+            <option value="desc">降順</option>
+          </select>
         </div>
         
         <div className="print-control">
