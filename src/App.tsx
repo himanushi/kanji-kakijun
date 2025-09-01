@@ -26,16 +26,10 @@ const processKanjiSVG = (svgText: string): string => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgText, 'image/svg+xml');
   
-  // グループ要素を作成（番号を背面に配置するため）
-  const g = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
-  const svg = doc.querySelector('svg');
-  const strokesParent = doc.querySelector('g[id^="kvg:"]');
-  
-  // ストロークごとに番号を追加
+  // ストロークのスタイル設定
   const strokes = doc.querySelectorAll('path[id^="kvg:"]');
-  const numbers: Element[] = [];
   
-  strokes.forEach((stroke, index) => {
+  strokes.forEach((stroke) => {
     const path = stroke as SVGPathElement;
     // ストロークのスタイル設定
     path.setAttribute('stroke', '#000');
@@ -43,47 +37,10 @@ const processKanjiSVG = (svgText: string): string => {
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke-linecap', 'round');
     path.setAttribute('stroke-linejoin', 'round');
-    
-    // 書き順番号を追加
-    const pathData = path.getAttribute('d');
-    if (pathData) {
-      // パスの最初の座標を取得して番号を配置
-      const match = pathData.match(/M\s*([0-9.]+)[,\s]+([0-9.]+)/);
-      if (match) {
-        const x = parseFloat(match[1]);
-        const y = parseFloat(match[2]);
-        
-        // 番号の背景用の円を作成
-        const circle = doc.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', x.toString());
-        circle.setAttribute('cy', y.toString());
-        circle.setAttribute('r', '8');
-        circle.setAttribute('fill', 'white');
-        circle.setAttribute('stroke', 'none');
-        
-        const text = doc.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', x.toString());
-        text.setAttribute('y', (y + 4).toString());
-        text.setAttribute('fill', '#ff0000');
-        text.setAttribute('font-size', '12');
-        text.setAttribute('font-weight', 'normal');
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('font-family', 'sans-serif');
-        text.textContent = (index + 1).toString();
-        
-        g.appendChild(circle);
-        g.appendChild(text);
-      }
-    }
   });
   
-  // SVGに番号グループを追加
-  if (svg && strokesParent) {
-    // 番号を最初に追加（背面に配置）
-    svg.insertBefore(g, strokesParent);
-  }
-  
   // viewBoxを正方形に調整
+  const svg = doc.querySelector('svg');
   if (svg) {
     svg.setAttribute('viewBox', '0 0 109 109');
     svg.setAttribute('width', '100%');
