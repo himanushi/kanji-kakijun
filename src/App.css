@@ -142,6 +142,12 @@
   margin-bottom: 30px;
 }
 
+.kanji-pair {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin-bottom: 10px;
+}
+
 .kanji-row {
   display: flex;
   gap: 0;
@@ -151,6 +157,32 @@
 .line-break {
   height: 20px;
   margin: 10px 0;
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-control label {
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+}
+
+.stroke-order-select {
+  padding: 4px 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.stroke-order-select:focus {
+  outline: none;
+  border-color: #4CAF50;
 }
 
 .kanji-container {
