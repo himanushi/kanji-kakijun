@@ -133,46 +133,72 @@ function App() {
     localStorage.setItem('kanjiSizeMm', kanjiSizeMm.toString());
   }, [kanjiSizeMm]);
   
-  // 入力テキストから漢字のみを抽出
-  const extractKanji = (text: string): string[] => {
-    const kanjiRegex = /[\u4e00-\u9faf\u3400-\u4dbf]/g;
-    const matches = text.match(kanjiRegex);
-    return matches ? matches : [];
+  // 入力テキストから漢字のみを抽出（行ごとに処理）
+  const extractKanjiByLines = (text: string): string[][] => {
+    const lines = text.split('\n');
+    return lines.map(line => {
+      const kanjiRegex = /[\u4e00-\u9faf\u3400-\u4dbf]/g;
+      const matches = line.match(kanjiRegex);
+      return matches ? matches : [];
+    }).filter(line => line.length > 0); // 空行は除外
   };
   
-  const kanjiList = extractKanji(inputText);
+  const kanjiLines = extractKanjiByLines(inputText);
   
   // A4サイズ（210mm × 297mm）を考慮した1行あたりの最大マス数を計算
   const maxKanjiPerRow = Math.floor(190 / kanjiSizeMm); // マージンを考慮
   
-  // 漢字をペア（番号付き・番号なし）でグループ化し、行ごとに整理
+  // 改行を考慮したドリルレイアウトを作成
   const createDrillLayout = () => {
     const rows = [];
+    let globalIndex = 0;
     
-    for (let i = 0; i < kanjiList.length; i += maxKanjiPerRow) {
-      const kanjiInRow = kanjiList.slice(i, i + maxKanjiPerRow);
+    kanjiLines.forEach((lineKanji, lineIndex) => {
+      // 各行の漢字を最大幅で折り返し処理
+      for (let i = 0; i < lineKanji.length; i += maxKanjiPerRow) {
+        const kanjiInRow = lineKanji.slice(i, i + maxKanjiPerRow);
+        
+        // 番号付きの行
+        const numberedRow = kanjiInRow.map((kanji, index) => (
+          <KanjiDisplay 
+            key={`${kanji}-${globalIndex + index}-numbered`} 
+            kanji={kanji} 
+            sizeMm={kanjiSizeMm} 
+            showNumbers={true} 
+          />
+        ));
+        
+        // 番号なしの行
+        const plainRow = kanjiInRow.map((kanji, index) => (
+          <KanjiDisplay 
+            key={`${kanji}-${globalIndex + index}-plain`} 
+            kanji={kanji} 
+            sizeMm={kanjiSizeMm} 
+            showNumbers={false} 
+          />
+        ));
+        
+        rows.push(
+          <div key={`line-${lineIndex}-row-${i}-numbered`} className="kanji-row">
+            {numberedRow}
+          </div>
+        );
+        rows.push(
+          <div key={`line-${lineIndex}-row-${i}-plain`} className="kanji-row">
+            {plainRow}
+          </div>
+        );
+        
+        globalIndex += kanjiInRow.length;
+      }
       
-      // 番号付きの行
-      const numberedRow = kanjiInRow.map((kanji, index) => (
-        <KanjiDisplay key={`${kanji}-${i + index}-numbered`} kanji={kanji} sizeMm={kanjiSizeMm} showNumbers={true} />
-      ));
-      
-      // 番号なしの行
-      const plainRow = kanjiInRow.map((kanji, index) => (
-        <KanjiDisplay key={`${kanji}-${i + index}-plain`} kanji={kanji} sizeMm={kanjiSizeMm} showNumbers={false} />
-      ));
-      
-      rows.push(
-        <div key={`row-${i}-numbered`} className="kanji-row">
-          {numberedRow}
-        </div>
-      );
-      rows.push(
-        <div key={`row-${i}-plain`} className="kanji-row">
-          {plainRow}
-        </div>
-      );
-    }
+      // 行間にスペースを追加（最後の行以外）
+      if (lineIndex < kanjiLines.length - 1) {
+        rows.push(
+          <div key={`line-break-${lineIndex}`} className="line-break"></div>
+        );
+      }
+    });
     
     return rows;
   };
@@ -215,14 +241,14 @@ function App() {
           <button 
             onClick={() => window.print()} 
             className="print-button"
-            disabled={kanjiList.length === 0}
+            disabled={kanjiLines.length === 0}
           >
             印刷
           </button>
         </div>
       </div>
       
-      {kanjiList.length > 0 && (
+      {kanjiLines.length > 0 && (
         <div className="drill-container">
           {createDrillLayout()}
         </div>
