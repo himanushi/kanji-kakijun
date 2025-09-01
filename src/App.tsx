@@ -88,8 +88,18 @@ const KanjiDisplay: React.FC<KanjiDisplayProps> = ({ kanji, sizeMm, showNumbers 
     }
   }, [kanji, showNumbers]);
   
+  const containerStyle = {
+    width: `${sizeMm}mm`,
+    height: `${sizeMm}mm`,
+    minWidth: `${sizeMm}mm`,
+    maxWidth: `${sizeMm}mm`,
+    minHeight: `${sizeMm}mm`,
+    maxHeight: `${sizeMm}mm`,
+    flex: 'none'
+  };
+
   return (
-    <div className="kanji-container" style={{ width: `${sizeMm}mm`, height: `${sizeMm}mm` }}>
+    <div className="kanji-container" style={containerStyle}>
       {/* 十字線（点線） */}
       <svg className="grid-lines" viewBox="0 0 100 100" style={{ width: '100%', height: '100%', position: 'absolute' }}>
         <line x1="50" y1="0" x2="50" y2="100" stroke="#666" strokeDasharray="2,2" />
