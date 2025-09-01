@@ -186,14 +186,18 @@ function App() {
     const lines = text.split('\n');
     return lines.map(line => {
       const kanjiRegex = /[\u4e00-\u9faf\u3400-\u4dbf]/g;
-      let matches = line.match(kanjiRegex);
+      const matches = line.match(kanjiRegex);
       
-      if (matches && removeDuplicates) {
-        // 重複削除：各行内で重複を削除
-        matches = [...new Set(matches)];
+      if (!matches) {
+        return [];
       }
       
-      return matches ? matches : [];
+      if (removeDuplicates) {
+        // 重複削除：各行内で重複を削除
+        return [...new Set(matches)];
+      }
+      
+      return matches;
     }).filter(line => line.length > 0); // 空行は除外
   };
 
@@ -268,8 +272,8 @@ function App() {
   const maxKanjiPerRow = Math.floor(190 / kanjiSizeMm); // マージンを考慮
   
   // 改行を考慮したドリルレイアウトを作成
-  const createDrillLayout = () => {
-    const rows = [];
+  const createDrillLayout = (): React.ReactElement[] => {
+    const rows: React.ReactElement[] = [];
     let globalIndex = 0;
     
     kanjiLines.forEach((lineKanji, lineIndex) => {
