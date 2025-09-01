@@ -21,23 +21,33 @@ const fetchKanjiSVG = async (kanji: string): Promise<string | null> => {
   }
 };
 
-// SVGから書き順情報を抽出して処理
-const processKanjiSVG = (svgText: string): string => {
+// SVGを処理（書き順番号を表示/非表示）
+const processKanjiSVG = (svgText: string, showNumbers: boolean): string => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgText, 'image/svg+xml');
   
   // ストロークのスタイル設定
   const strokes = doc.querySelectorAll('path[id^="kvg:"]');
-  
   strokes.forEach((stroke) => {
     const path = stroke as SVGPathElement;
-    // ストロークのスタイル設定
     path.setAttribute('stroke', '#000');
     path.setAttribute('stroke-width', '3');
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke-linecap', 'round');
     path.setAttribute('stroke-linejoin', 'round');
   });
+  
+  // StrokeNumbersグループの表示/非表示を制御
+  const strokeNumbersGroup = doc.querySelector('g[id*="StrokeNumbers"]');
+  if (strokeNumbersGroup) {
+    if (showNumbers) {
+      // 書き順番号を表示
+      strokeNumbersGroup.setAttribute('style', 'fill:#666;font-size:8;font-family:sans-serif');
+    } else {
+      // 書き順番号を非表示
+      strokeNumbersGroup.setAttribute('style', 'display:none');
+    }
+  }
   
   // viewBoxを正方形に調整
   const svg = doc.querySelector('svg');
@@ -52,10 +62,11 @@ const processKanjiSVG = (svgText: string): string => {
 
 interface KanjiDisplayProps {
   kanji: string;
-  size: number;
+  sizeMm: number;
+  showNumbers: boolean;
 }
 
-const KanjiDisplay: React.FC<KanjiDisplayProps> = ({ kanji, size }) => {
+const KanjiDisplay: React.FC<KanjiDisplayProps> = ({ kanji, sizeMm, showNumbers }) => {
   const [svgContent, setSvgContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   
@@ -64,7 +75,7 @@ const KanjiDisplay: React.FC<KanjiDisplayProps> = ({ kanji, size }) => {
       setLoading(true);
       const svg = await fetchKanjiSVG(kanji);
       if (svg) {
-        const processed = processKanjiSVG(svg);
+        const processed = processKanjiSVG(svg, showNumbers);
         setSvgContent(processed);
       } else {
         setSvgContent(null);
@@ -75,10 +86,10 @@ const KanjiDisplay: React.FC<KanjiDisplayProps> = ({ kanji, size }) => {
     if (kanji) {
       loadKanji();
     }
-  }, [kanji]);
+  }, [kanji, showNumbers]);
   
   return (
-    <div className="kanji-container" style={{ width: size, height: size }}>
+    <div className="kanji-container" style={{ width: `${sizeMm}mm`, height: `${sizeMm}mm` }}>
       {/* 十字線（点線） */}
       <svg className="grid-lines" viewBox="0 0 100 100" style={{ width: '100%', height: '100%', position: 'absolute' }}>
         <line x1="50" y1="0" x2="50" y2="100" stroke="#ccc" strokeDasharray="2,2" />
@@ -102,8 +113,25 @@ const KanjiDisplay: React.FC<KanjiDisplayProps> = ({ kanji, size }) => {
 };
 
 function App() {
-  const [inputText, setInputText] = useState('');
-  const [kanjiSize, setKanjiSize] = useState(200);
+  const [inputText, setInputText] = useState(() => {
+    // LocalStorageから読み込み
+    return localStorage.getItem('kanjiInput') || '';
+  });
+  const [kanjiSizeMm, setKanjiSizeMm] = useState(() => {
+    // LocalStorageから読み込み
+    const saved = localStorage.getItem('kanjiSizeMm');
+    return saved ? parseInt(saved, 10) : 20;
+  });
+  
+  // 入力テキストの変更を監視してLocalStorageに保存
+  useEffect(() => {
+    localStorage.setItem('kanjiInput', inputText);
+  }, [inputText]);
+  
+  // サイズの変更を監視してLocalStorageに保存
+  useEffect(() => {
+    localStorage.setItem('kanjiSizeMm', kanjiSizeMm.toString());
+  }, [kanjiSizeMm]);
   
   // 入力テキストから漢字のみを抽出
   const extractKanji = (text: string): string[] => {
@@ -113,6 +141,41 @@ function App() {
   };
   
   const kanjiList = extractKanji(inputText);
+  
+  // A4サイズ（210mm × 297mm）を考慮した1行あたりの最大マス数を計算
+  const maxKanjiPerRow = Math.floor(190 / kanjiSizeMm); // マージンを考慮
+  
+  // 漢字をペア（番号付き・番号なし）でグループ化し、行ごとに整理
+  const createDrillLayout = () => {
+    const rows = [];
+    
+    for (let i = 0; i < kanjiList.length; i += maxKanjiPerRow) {
+      const kanjiInRow = kanjiList.slice(i, i + maxKanjiPerRow);
+      
+      // 番号付きの行
+      const numberedRow = kanjiInRow.map((kanji, index) => (
+        <KanjiDisplay key={`${kanji}-${i + index}-numbered`} kanji={kanji} sizeMm={kanjiSizeMm} showNumbers={true} />
+      ));
+      
+      // 番号なしの行
+      const plainRow = kanjiInRow.map((kanji, index) => (
+        <KanjiDisplay key={`${kanji}-${i + index}-plain`} kanji={kanji} sizeMm={kanjiSizeMm} showNumbers={false} />
+      ));
+      
+      rows.push(
+        <div key={`row-${i}-numbered`} className="kanji-row">
+          {numberedRow}
+        </div>
+      );
+      rows.push(
+        <div key={`row-${i}-plain`} className="kanji-row">
+          {plainRow}
+        </div>
+      );
+    }
+    
+    return rows;
+  };
   
   return (
     <div className="App">
@@ -124,36 +187,36 @@ function App() {
       <div className="controls no-print">
         <div className="input-section">
           <label htmlFor="kanji-input">漢字を入力：</label>
-          <input
+          <textarea
             id="kanji-input"
-            type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="例：漢字"
             className="kanji-input"
+            rows={3}
           />
         </div>
         
         <div className="size-control">
-          <label htmlFor="size-slider">表示サイズ：</label>
+          <label htmlFor="size-slider">マスサイズ：</label>
           <input
             id="size-slider"
             type="range"
-            min="100"
-            max="400"
-            value={kanjiSize}
-            onChange={(e) => setKanjiSize(Number(e.target.value))}
+            min="10"
+            max="50"
+            value={kanjiSizeMm}
+            onChange={(e) => setKanjiSizeMm(Number(e.target.value))}
             className="size-slider"
           />
-          <span>{kanjiSize}px</span>
+          <span>{kanjiSizeMm}mm</span>
         </div>
       </div>
       
-      <div className="kanji-grid">
-        {kanjiList.map((kanji, index) => (
-          <KanjiDisplay key={`${kanji}-${index}`} kanji={kanji} size={kanjiSize} />
-        ))}
-      </div>
+      {kanjiList.length > 0 && (
+        <div className="drill-container">
+          {createDrillLayout()}
+        </div>
+      )}
     </div>
   );
 }
