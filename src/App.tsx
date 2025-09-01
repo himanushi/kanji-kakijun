@@ -127,9 +127,9 @@ function App() {
     const saved = localStorage.getItem('removeDuplicates');
     return saved ? JSON.parse(saved) : true; // デフォルトは重複削除ON
   });
-  const [strokeOrder, setStrokeOrder] = useState(() => {
+  const [sortOrder, setSortOrder] = useState(() => {
     // LocalStorageから読み込み
-    return localStorage.getItem('strokeOrder') || 'none'; // なし, asc(昇順), desc(降順)
+    return localStorage.getItem('sortOrder') || 'none'; // なし, stroke-asc, stroke-desc, unicode-asc, unicode-desc
   });
   
   // 入力テキストの変更を監視してLocalStorageに保存
@@ -147,10 +147,10 @@ function App() {
     localStorage.setItem('removeDuplicates', JSON.stringify(removeDuplicates));
   }, [removeDuplicates]);
   
-  // 画数順設定の変更を監視してLocalStorageに保存
+  // ソート設定の変更を監視してLocalStorageに保存
   useEffect(() => {
-    localStorage.setItem('strokeOrder', strokeOrder);
-  }, [strokeOrder]);
+    localStorage.setItem('sortOrder', sortOrder);
+  }, [sortOrder]);
   
   // KanjiVGのSVGデータから実際の画数を取得
   const getStrokeCountFromKanjiVG = async (kanji: string): Promise<number> => {
@@ -187,34 +187,52 @@ function App() {
     }).filter(line => line.length > 0); // 空行は除外
   };
 
-  // 画数順ソート用の非同期関数
-  const sortKanjiByStrokeCount = async (kanjiList: string[][]): Promise<string[][]> => {
-    if (strokeOrder === 'none') return kanjiList;
+  // ソート用の非同期関数
+  const sortKanji = async (kanjiList: string[][]): Promise<string[][]> => {
+    if (sortOrder === 'none') return kanjiList;
 
     const sortedLines = await Promise.all(
       kanjiList.map(async (lineKanji) => {
-        // 各漢字の画数を取得
-        const kanjiWithStrokes = await Promise.all(
-          lineKanji.map(async (kanji) => {
-            // キャッシュから取得を試行
-            let strokeCount = strokeCache.get(kanji);
-            if (strokeCount === undefined) {
-              strokeCount = await getStrokeCountFromKanjiVG(kanji);
-              // キャッシュに保存
-              setStrokeCache(prev => new Map(prev.set(kanji, strokeCount!)));
-            }
-            return { kanji, strokeCount };
-          })
-        );
+        if (sortOrder.startsWith('stroke-')) {
+          // 画数順ソート
+          const kanjiWithStrokes = await Promise.all(
+            lineKanji.map(async (kanji) => {
+              // キャッシュから取得を試行
+              let strokeCount = strokeCache.get(kanji);
+              if (strokeCount === undefined) {
+                strokeCount = await getStrokeCountFromKanjiVG(kanji);
+                // キャッシュに保存
+                setStrokeCache(prev => new Map(prev.set(kanji, strokeCount!)));
+              }
+              return { kanji, strokeCount };
+            })
+          );
 
-        // 画数順でソート
-        kanjiWithStrokes.sort((a, b) => 
-          strokeOrder === 'asc' 
-            ? a.strokeCount - b.strokeCount 
-            : b.strokeCount - a.strokeCount
-        );
+          // 画数順でソート
+          kanjiWithStrokes.sort((a, b) => 
+            sortOrder === 'stroke-asc' 
+              ? a.strokeCount - b.strokeCount 
+              : b.strokeCount - a.strokeCount
+          );
 
-        return kanjiWithStrokes.map(item => item.kanji);
+          return kanjiWithStrokes.map(item => item.kanji);
+        } else if (sortOrder.startsWith('unicode-')) {
+          // Unicode順ソート
+          const kanjiWithUnicode = lineKanji.map(kanji => ({
+            kanji,
+            unicode: kanji.charCodeAt(0)
+          }));
+
+          kanjiWithUnicode.sort((a, b) => 
+            sortOrder === 'unicode-asc' 
+              ? a.unicode - b.unicode 
+              : b.unicode - a.unicode
+          );
+
+          return kanjiWithUnicode.map(item => item.kanji);
+        }
+
+        return lineKanji;
       })
     );
 
@@ -223,16 +241,16 @@ function App() {
   
   const [sortedKanjiLines, setSortedKanjiLines] = useState<string[][]>([]);
 
-  // 漢字リストを画数順でソート
+  // 漢字リストをソート
   useEffect(() => {
     const processKanji = async () => {
       const rawKanjiLines = extractKanjiByLines(inputText);
-      const sorted = await sortKanjiByStrokeCount(rawKanjiLines);
+      const sorted = await sortKanji(rawKanjiLines);
       setSortedKanjiLines(sorted);
     };
     
     processKanji();
-  }, [inputText, removeDuplicates, strokeOrder, strokeCache]);
+  }, [inputText, removeDuplicates, sortOrder, strokeCache]);
 
   const kanjiLines = sortedKanjiLines;
   
@@ -340,16 +358,18 @@ function App() {
         </div>
         
         <div className="sort-control">
-          <label htmlFor="stroke-order">画数順：</label>
+          <label htmlFor="sort-order">表示順：</label>
           <select
-            id="stroke-order"
-            value={strokeOrder}
-            onChange={(e) => setStrokeOrder(e.target.value)}
-            className="stroke-order-select"
+            id="sort-order"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="sort-order-select"
           >
             <option value="none">なし</option>
-            <option value="asc">昇順</option>
-            <option value="desc">降順</option>
+            <option value="stroke-asc">画数順（昇順）</option>
+            <option value="stroke-desc">画数順（降順）</option>
+            <option value="unicode-asc">Unicode順（昇順）</option>
+            <option value="unicode-desc">Unicode順（降順）</option>
           </select>
         </div>
         
