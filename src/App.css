@@ -81,6 +81,32 @@
   text-align: center;
 }
 
+.print-control {
+  display: flex;
+  align-items: center;
+}
+
+.print-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.print-button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.print-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
 /* ドリル形式のレイアウト */
 .drill-container {
   margin-bottom: 30px;
