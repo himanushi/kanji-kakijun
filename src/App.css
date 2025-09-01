@@ -145,13 +145,14 @@
 .kanji-pair {
   page-break-inside: avoid;
   break-inside: avoid;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .kanji-row {
   display: flex;
   gap: 0;
-  margin-bottom: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .line-break {
@@ -193,6 +194,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 .grid-lines {
@@ -229,19 +232,34 @@
   @page {
     size: A4;
     margin: 10mm;
+    /* ページの境界線を除去 */
+    border: none;
+  }
+  
+  * {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0;
+    outline: 0;
+    font-size: 100%;
+    vertical-align: baseline;
   }
   
   body {
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1;
+    overflow: hidden;
   }
   
   .App {
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden;
   }
   
   .app-header {
-    display: none;
+    display: none !important;
   }
   
   /* 入力欄とスライダーは印刷時に非表示 */
@@ -250,16 +268,58 @@
   }
   
   .drill-container {
-    margin: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+  
+  .kanji-pair {
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    /* 改ページ前後のマージンを制御 */
+    page-break-before: auto;
+    page-break-after: auto;
+    border: none !important;
+    overflow: hidden;
   }
   
   .kanji-row {
-    gap: 0;
-    margin-bottom: 0;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden;
   }
   
   .kanji-container {
-    page-break-inside: avoid;
-    break-inside: avoid;
+    margin: 0 !important;
+    padding: 0 !important;
+    /* 境界線のみ保持 */
+    border: 1px solid #333 !important;
+    /* ページ境界での分割を防ぐ */
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    /* オーバーフロー制御 */
+    overflow: hidden !important;
+    /* ボックスサイジング */
+    box-sizing: border-box !important;
+  }
+  
+  .line-break {
+    height: 5px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-inside: avoid !important;
+    border: none !important;
+    overflow: hidden;
+  }
+  
+  /* SVG要素も制御 */
+  svg {
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }
