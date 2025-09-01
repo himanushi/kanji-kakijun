@@ -1,42 +1,165 @@
-#root {
-  max-width: 1280px;
+.App {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.app-header h1 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.app-header p {
+  color: #666;
+  font-size: 14px;
+}
+
+.controls {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.input-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-section label {
+  font-weight: bold;
+  color: #333;
+}
+
+.kanji-input {
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  width: 200px;
+}
+
+.kanji-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.size-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.size-control label {
+  font-weight: bold;
+  color: #333;
+}
+
+.size-slider {
+  width: 150px;
+}
+
+.size-control span {
+  color: #666;
+  font-size: 14px;
+  min-width: 50px;
+}
+
+.kanji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  justify-items: center;
+}
+
+.kanji-container {
+  position: relative;
+  border: 2px solid #333;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-lines {
+  pointer-events: none;
+  z-index: 1;
+}
+
+.kanji-svg {
+  z-index: 2;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #999;
+  font-size: 14px;
+}
+
+.error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #f44336;
+  font-size: 12px;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+/* 印刷用スタイル */
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
   }
-  to {
-    transform: rotate(360deg);
+  
+  body {
+    margin: 0;
+    padding: 0;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  
+  .App {
+    padding: 0;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  
+  .app-header {
+    margin-bottom: 20px;
+  }
+  
+  .app-header h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .app-header p {
+    font-size: 12px;
+  }
+  
+  /* 入力欄とスライダーは印刷時に非表示 */
+  .no-print {
+    display: none !important;
+  }
+  
+  .kanji-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+  }
+  
+  .kanji-container {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
 }
