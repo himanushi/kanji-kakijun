@@ -92,8 +92,8 @@ const KanjiDisplay: React.FC<KanjiDisplayProps> = ({ kanji, sizeMm, showNumbers 
     <div className="kanji-container" style={{ width: `${sizeMm}mm`, height: `${sizeMm}mm` }}>
       {/* 十字線（点線） */}
       <svg className="grid-lines" viewBox="0 0 100 100" style={{ width: '100%', height: '100%', position: 'absolute' }}>
-        <line x1="50" y1="0" x2="50" y2="100" stroke="#ccc" strokeDasharray="2,2" />
-        <line x1="0" y1="50" x2="100" y2="50" stroke="#ccc" strokeDasharray="2,2" />
+        <line x1="50" y1="0" x2="50" y2="100" stroke="#999" strokeDasharray="2,2" />
+        <line x1="0" y1="50" x2="100" y2="50" stroke="#999" strokeDasharray="2,2" />
       </svg>
       
       {/* 漢字SVG */}
@@ -240,17 +240,17 @@ function App() {
         </div>
         
         <div className="size-control">
-          <label htmlFor="size-slider">マスサイズ：</label>
+          <label htmlFor="size-input">マスサイズ：</label>
           <input
-            id="size-slider"
-            type="range"
+            id="size-input"
+            type="number"
             min="10"
-            max="50"
+            max="100"
             value={kanjiSizeMm}
             onChange={(e) => setKanjiSizeMm(Number(e.target.value))}
-            className="size-slider"
+            className="size-input"
           />
-          <span>{kanjiSizeMm}mm</span>
+          <span>mm</span>
         </div>
         
         <div className="options-control">
