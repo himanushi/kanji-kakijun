@@ -82,6 +82,26 @@
   text-align: center;
 }
 
+.options-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.options-control label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.options-control input[type="checkbox"] {
+  cursor: pointer;
+}
+
 .print-control {
   display: flex;
   align-items: center;
