@@ -20,7 +20,8 @@
 
 .controls {
   display: flex;
-  gap: 30px;
+  flex-wrap: wrap;
+  gap: 25px;
   align-items: flex-start;
   margin-bottom: 30px;
   padding: 20px;
@@ -29,11 +30,20 @@
   border: 1px solid #e0e0e0;
 }
 
+@media (max-width: 768px) {
+  .controls {
+    flex-direction: column;
+    gap: 20px;
+    padding: 15px;
+  }
+}
+
 .input-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
   flex: 1;
+  min-width: 250px;
 }
 
 .input-section label {
@@ -48,7 +58,7 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   width: 100%;
-  max-width: 600px;
+  max-width: 100%;
   min-height: 120px;
   resize: vertical;
   font-family: inherit;
@@ -63,7 +73,19 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-width: 200px;
+  min-width: 150px;
+  margin-left: 15px;
+}
+
+@media (max-width: 768px) {
+  .input-section {
+    min-width: 100%;
+  }
+  
+  .size-control {
+    min-width: 100%;
+    margin-left: 0;
+  }
 }
 
 .size-control label {
@@ -95,6 +117,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 120px;
 }
 
 .options-control label {
@@ -114,6 +137,15 @@
 .print-control {
   display: flex;
   align-items: center;
+  min-width: 100px;
+}
+
+@media (max-width: 768px) {
+  .options-control,
+  .print-control,
+  .sort-control {
+    min-width: 100%;
+  }
 }
 
 .print-button {
@@ -232,95 +264,74 @@
 @media print {
   @page {
     size: A4;
-    margin: 10mm;
-    /* ページの境界線を除去 */
-    border: none;
+    margin: 15mm;
   }
   
   * {
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0;
-    outline: 0;
-    font-size: 100%;
-    vertical-align: baseline;
+    box-sizing: border-box;
   }
   
-  body {
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1;
-    overflow: hidden;
+  html, body {
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    line-height: 1.3;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
   
   .App {
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    height: auto;
   }
   
   .app-header {
-    display: none !important;
+    display: none;
   }
   
-  /* 入力欄とスライダーは印刷時に非表示 */
   .no-print {
-    display: none !important;
+    display: none;
   }
   
   .drill-container {
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    overflow: visible;
   }
   
   .kanji-pair {
-    margin: 0 !important;
-    padding: 0 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    /* 改ページ前後のマージンを制御 */
-    page-break-before: auto;
-    page-break-after: auto;
-    border: none !important;
-    overflow: hidden;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    overflow: visible;
   }
   
   .kanji-row {
-    gap: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    overflow: hidden;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    height: auto;
   }
   
   .kanji-container {
-    margin: 0 !important;
-    padding: 0 !important;
-    /* 境界線のみ保持 */
-    border: 1px solid #333 !important;
-    /* ページ境界での分割を防ぐ */
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    /* オーバーフロー制御 */
-    overflow: hidden !important;
-    /* ボックスサイジング */
-    box-sizing: border-box !important;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #333;
+    overflow: visible;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
   
   .line-break {
-    height: 5px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    page-break-inside: avoid !important;
-    border: none !important;
-    overflow: hidden;
-  }
-  
-  /* SVG要素も制御 */
-  svg {
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    height: 6mm;
+    margin: 0;
+    padding: 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }
