@@ -72,14 +72,23 @@
   font-size: 14px;
 }
 
-.size-slider {
-  width: 100%;
+.size-input {
+  width: 80px;
+  padding: 4px 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.size-input:focus {
+  outline: none;
+  border-color: #4CAF50;
 }
 
 .size-control span {
   color: #666;
   font-size: 14px;
-  text-align: center;
 }
 
 .options-control {
