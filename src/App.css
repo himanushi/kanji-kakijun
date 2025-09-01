@@ -1,52 +1,56 @@
 .App {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 20px;
 }
 
 .app-header {
-  text-align: center;
   margin-bottom: 30px;
 }
 
 .app-header h1 {
   color: #333;
   margin-bottom: 10px;
+  font-size: 24px;
 }
 
 .app-header p {
   color: #666;
   font-size: 14px;
+  margin: 0;
 }
 
 .controls {
   display: flex;
   gap: 30px;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
   margin-bottom: 30px;
   padding: 20px;
-  background: #f5f5f5;
+  background: #f9f9f9;
   border-radius: 8px;
+  border: 1px solid #e0e0e0;
 }
 
 .input-section {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
 }
 
 .input-section label {
   font-weight: bold;
   color: #333;
+  font-size: 14px;
 }
 
 .kanji-input {
   padding: 8px 12px;
   font-size: 16px;
-  border: 2px solid #ddd;
+  border: 1px solid #ddd;
   border-radius: 4px;
-  width: 200px;
+  width: 100%;
+  max-width: 400px;
+  resize: vertical;
+  font-family: inherit;
 }
 
 .kanji-input:focus {
@@ -56,39 +60,46 @@
 
 .size-control {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
 }
 
 .size-control label {
   font-weight: bold;
   color: #333;
+  font-size: 14px;
 }
 
 .size-slider {
-  width: 150px;
+  width: 100%;
 }
 
 .size-control span {
   color: #666;
   font-size: 14px;
-  min-width: 50px;
+  text-align: center;
 }
 
-.kanji-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-  justify-items: center;
+/* ドリル形式のレイアウト */
+.drill-container {
+  margin-bottom: 30px;
+}
+
+.kanji-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0;
 }
 
 .kanji-container {
   position: relative;
-  border: 2px solid #333;
+  border: 1px solid #333;
   background: white;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 .grid-lines {
@@ -106,7 +117,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   color: #999;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .error {
@@ -115,8 +126,9 @@
   left: 50%;
   transform: translate(-50%, -50%);
   color: #f44336;
-  font-size: 12px;
+  font-size: 11px;
   text-align: center;
+  padding: 0 10px;
 }
 
 /* 印刷用スタイル */
@@ -136,16 +148,7 @@
   }
   
   .app-header {
-    margin-bottom: 20px;
-  }
-  
-  .app-header h1 {
-    font-size: 24px;
-    margin-bottom: 5px;
-  }
-  
-  .app-header p {
-    font-size: 12px;
+    display: none;
   }
   
   /* 入力欄とスライダーは印刷時に非表示 */
@@ -153,9 +156,13 @@
     display: none !important;
   }
   
-  .kanji-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
+  .drill-container {
+    margin: 0;
+  }
+  
+  .kanji-row {
+    gap: 0;
+    margin-bottom: 0;
   }
   
   .kanji-container {
